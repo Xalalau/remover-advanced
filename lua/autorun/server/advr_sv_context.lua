@@ -52,7 +52,7 @@ net.Receive("m4n0cr4zy.Teleport", function(len, ply)
     local entPos = net.ReadVector()
     local plyEyeTrPos = ply:GetShootPos()
 
-    ply:SetEyeAngles((entPos - plyEyeTrPos):Angle())
+    ply:SetEyeAngles(Vector(0, 0, -1):Angle())
     ply:SetPos(entPos)
 end)
 
