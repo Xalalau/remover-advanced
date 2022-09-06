@@ -49,7 +49,8 @@ local defaultBlacklist = {
 	["func_brush"] = true,
 	["func_illusionary"] = true,
 	["class C_BaseEntity"] = true,
-	["class C_Sun"] = true
+	["class C_Sun"] = true,
+	["predicted_viewmodel"] = true
 }
 
 local usingTool = false
