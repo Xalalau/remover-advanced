@@ -27,7 +27,7 @@ if CLIENT then
 	language.Add("tool.removeradvanced.0", "Right-click the listed entities to display the context menu")
 
 	CreateClientConVar("advr_sphere_radius", "80", true, false)
-	CreateClientConVar("advr_enable_area_search", "true", false, false)
+	CreateClientConVar("advr_enable_area_search", "true", true, false)
 	CreateClientConVar("advr_allow_no_model", "false", true, false)
 	CreateClientConVar("advr_allow_weapons", "false", true, false)
 else
@@ -259,11 +259,13 @@ end
 local function SetSphere(value)
 	if SERVER then return end
 
-	local radius = value or GetConVar("advr_sphere_radius"):GetInt()
-	local longitude = 10
-	local altitude = 10
-		
-	if checkBoxSphere:GetChecked() then	
+	local isSphereEnabled = GetConVar("advr_enable_area_search"):GetBool()
+
+	if isSphereEnabled then	
+		local radius = value or GetConVar("advr_sphere_radius"):GetInt()
+		local longitude = 10
+		local altitude = 10
+
 		hook.Add("PostDrawTranslucentRenderables", "ADVRSphereHook", function()
 			if not usingTool then
 				RemoveSphere()
@@ -284,37 +286,54 @@ end
 --     Nota: Deploy e Holster são predicted, então no singleplayer eles só rodam no serverside
 --           Deploy é chamado ao pegar ferramenta (às vezes mais de uma vez)
 --				Bug: se o jogador tiver a ferramenta pré selecionada ao iniciar o game, o deploy não
---                   é chamado ao selecioná-la diretamente pela menu de armas.
+--                   é chamado ao selecioná-la diretamente pela menu de armas, apenas a partir da
+--                   segunda solução. Isso é contornado por uma checagem de inicialização em
+--                   TOOL:DrawHUD().
 --           Holster é chamado ao tirar a ferramenta (às vezes mais de uma vez)
-if CLIENT then
-	net.Receive("m4n0cr4zy.Tool_Swaped", function()
-		usingTool = net.ReadBool()
-
-		if checkBoxSphere then
-			if usingTool then
-				SetSphere()
-			else
-				RemoveSphere()
-			end
-		end
-	end)
-end
 local function ToolSwaped(ply, state)
-	if CLIENT then return end
-
-	net.Start("m4n0cr4zy.Tool_Swaped")
-	net.WriteBool(state)
-	net.Send(ply)
-
 	usingTool = state
+
+	if CLIENT then
+		if usingTool then
+			SetSphere()
+		else
+			RemoveSphere()
+		end
+	else
+		net.Start("m4n0cr4zy.Tool_Swaped")
+		net.WriteBool(state)
+		net.Send(ply)
+	end
 end
+net.Receive("m4n0cr4zy.Tool_Swaped", function(len, ply)
+	local state = net.ReadBool()
+	ply = CLIENT and LocalPlayer() or ply
+
+	ToolSwaped(ply, state)
+end)
 function TOOL:Deploy()
-	ToolSwaped(self:GetOwner(), true)
+	if not self.IsInitialized then
+		self.IsInitialized = true
+	end
+
+	if SERVER then
+		ToolSwaped(self:GetOwner(), true)
+	end
 end
 function TOOL:Holster()
-	ToolSwaped(self:GetOwner(), false)
+	if SERVER then
+		ToolSwaped(self:GetOwner(), false)
+	end
 end
+function TOOL:DrawHUD()
+	if not self.IsInitialized then
+		self.IsInitialized = true
 
+		net.Start("m4n0cr4zy.Tool_Swaped")
+		net.WriteBool(true)
+		net.SendToServer()
+	end
+end
 
 function TOOL.BuildCPanel(CPanel)
 	local menuMargin = 5
