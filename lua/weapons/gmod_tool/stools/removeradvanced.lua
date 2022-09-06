@@ -294,6 +294,10 @@ local function ToolSwaped(ply, state)
 	usingTool = state
 
 	if CLIENT then
+		if not self.IsInitialized then
+			self.IsInitialized = true
+		end
+
 		if usingTool then
 			SetSphere()
 		else
@@ -312,10 +316,6 @@ net.Receive("m4n0cr4zy.Tool_Swaped", function(len, ply)
 	ToolSwaped(ply, state)
 end)
 function TOOL:Deploy()
-	if not self.IsInitialized then
-		self.IsInitialized = true
-	end
-
 	if SERVER then
 		ToolSwaped(self:GetOwner(), true)
 	end
@@ -326,6 +326,8 @@ function TOOL:Holster()
 	end
 end
 function TOOL:DrawHUD()
+	-- HACK: GMod never calls Deploy() if the player selects the tool as
+	-- soon as the game has started (before opening the spawn menu)
 	if not self.IsInitialized then
 		self.IsInitialized = true
 
