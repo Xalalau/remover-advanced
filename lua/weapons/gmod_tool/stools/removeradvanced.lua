@@ -294,10 +294,6 @@ local function ToolSwaped(ply, state)
 	usingTool = state
 
 	if CLIENT then
-		if not self.IsInitialized then
-			self.IsInitialized = true
-		end
-
 		if usingTool then
 			SetSphere()
 		else
@@ -316,6 +312,10 @@ net.Receive("m4n0cr4zy.Tool_Swaped", function(len, ply)
 	ToolSwaped(ply, state)
 end)
 function TOOL:Deploy()
+	if not self.IsInitialized then
+		self.IsInitialized = true
+	end
+
 	if SERVER then
 		ToolSwaped(self:GetOwner(), true)
 	end
