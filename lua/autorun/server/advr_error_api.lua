@@ -62,7 +62,7 @@ local function AutoCheckURL(addonData)
     end
 
     CheckURL()
-    timer.Create(addonData.url, 180, 0, function()
+    timer.Create(addonData.url, 600, 0, function()
         CheckURL()
     end)
 end
