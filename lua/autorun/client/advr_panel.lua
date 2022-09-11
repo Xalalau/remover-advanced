@@ -156,6 +156,8 @@ local function RemoveEnt(lines, EntsListView, IsConstrained)
     local netName = IsConstrained and "m4n0cr4zy.Remove_With_Constraineds" or "m4n0cr4zy.Remove"
 
     for k, curLine in ipairs(lines) do
+        if not IsValid(curLine) then return end
+
         local curIndex = curLine:GetID()
 
         if entsIds.sv[curLine.entInfo.index] then -- Checar se não é um entidade do server.
