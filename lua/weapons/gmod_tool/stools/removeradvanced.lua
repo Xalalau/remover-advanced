@@ -331,9 +331,17 @@ function TOOL:DrawHUD()
 	if not self.IsInitialized then
 		self.IsInitialized = true
 
-		net.Start("m4n0cr4zy.Tool_Swaped")
-		net.WriteBool(true)
-		net.SendToServer()
+		-- Note: select the tool, close the game, open the game, open the spawn menu and select other tool. This
+		-- function will be called... That's why I check the weapon name
+		timer.Simple(0.3, function()
+			local wep = LocalPlayer():GetActiveWeapon()
+
+			if IsValid(wep) and wep.IsInitialized then
+				net.Start("m4n0cr4zy.Tool_Swaped")
+				net.WriteBool(true)
+				net.SendToServer()
+			end
+		end)
 	end
 end
 
