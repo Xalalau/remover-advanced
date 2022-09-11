@@ -36,6 +36,10 @@ net.Receive("m4n0cr4zy.Highlight_Update_Sv_Only_Ent_Pos", function()
     local entID = net.ReadUInt(32)
     local pos = net.ReadVector()
 
+    if not entsIds.sv[entID] then
+        entsIds.sv[entID] = {} -- HACK! Just to fix some script errors, idk how entsIds.sv[entID] can be nil.
+    end
+
     entsIds.sv[entID].pos = pos
 end)
 
