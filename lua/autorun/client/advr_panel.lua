@@ -548,7 +548,9 @@ end
 
 -- Clique esquerdo no tool. Joga a info de um lado pro outro até ter tudo que precisa
 net.Receive("m4n0cr4zy.Left_Click_1", function()
-	local radius = GetConVar("advr_sphere_radius"):GetInt()
+    if GetConVar("advr_enable_area_search"):GetBool() == false then return end
+
+    local radius = GetConVar("advr_sphere_radius"):GetInt()
     local tr = LocalPlayer():GetEyeTrace()
 
     net.Start("m4n0cr4zy.Left_Click_2")

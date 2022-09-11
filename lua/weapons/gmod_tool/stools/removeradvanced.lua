@@ -187,7 +187,7 @@ end
 
 -- Botão esquerdo: Busca localizada (esfera)
 function TOOL:LeftClick(trace)
-    if SERVER and (GetConVar("advr_enable_area_search"):GetBool() == true) then
+    if SERVER then
         net.Start("m4n0cr4zy.Left_Click_1")
         net.Send(self:GetOwner())
     end	
