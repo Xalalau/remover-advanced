@@ -531,10 +531,23 @@ local function GetServerEntsIds(entsListCl, entsListSv)
     end
 end
 
+-- Clique esquerdo no tool. Joga a info de um lado pro outro até ter tudo que precisa
+net.Receive("m4n0cr4zy.Right_Click_1", function()
+    local allow_weapons = GetConVar("advr_allow_no_model"):GetBool()
+    local allow_no_model = GetConVar("advr_allow_weapons"):GetBool()
+
+    net.Start("m4n0cr4zy.Right_Click_2")
+    net.WriteBool(allow_weapons)
+    net.WriteBool(allow_no_model)
+    net.SendToServer()
+end)
 
 -- Clique direito no tool
 local function RightClick(entsListSv)
-    local entsListCl = ADVR_GetAllEnts()
+    local allow_weapons = GetConVar("advr_allow_no_model"):GetBool()
+    local allow_no_model = GetConVar("advr_allow_weapons"):GetBool()
+
+    local entsListCl = ADVR_GetAllEnts(nil, nil, allow_weapons, allow_no_model)
 
     local width = ScrW() * .5
     local height = ScrH() * .7
@@ -552,10 +565,14 @@ net.Receive("m4n0cr4zy.Left_Click_1", function()
 
     local radius = GetConVar("advr_sphere_radius"):GetInt()
     local tr = LocalPlayer():GetEyeTrace()
+    local allow_weapons = GetConVar("advr_allow_no_model"):GetBool()
+    local allow_no_model = GetConVar("advr_allow_weapons"):GetBool()
 
     net.Start("m4n0cr4zy.Left_Click_2")
     net.WriteInt(radius, 13)
     net.WriteVector(tr.HitPos)
+    net.WriteBool(allow_weapons)
+    net.WriteBool(allow_no_model)
     net.SendToServer()
 
     leftClickPos = tr.HitPos
@@ -563,8 +580,10 @@ end)
 
 local function LeftClick(entsListSv)
 	local radius = GetConVar("advr_sphere_radius"):GetInt()
+    local allow_weapons = GetConVar("advr_allow_no_model"):GetBool()
+    local allow_no_model = GetConVar("advr_allow_weapons"):GetBool()
 
-	local entsListCl = ADVR_GetAllEnts(leftClickPos, radius)
+    local entsListCl = ADVR_GetAllEnts(leftClickPos, radius, allow_weapons, allow_no_model)
 
     leftClickPos = nil
 

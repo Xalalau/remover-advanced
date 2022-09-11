@@ -34,6 +34,8 @@ else
 	util.AddNetworkString("m4n0cr4zy.Receive_Table_Cl")
 	util.AddNetworkString("m4n0cr4zy.Left_Click_1")
 	util.AddNetworkString("m4n0cr4zy.Left_Click_2")
+	util.AddNetworkString("m4n0cr4zy.Right_Click_1")
+	util.AddNetworkString("m4n0cr4zy.Right_Click_2")
 	util.AddNetworkString("m4n0cr4zy.Set_Blacklist")
 	util.AddNetworkString("m4n0cr4zy.Reset_Blacklist")
 	util.AddNetworkString("m4n0cr4zy.Tool_Swaped")
@@ -197,8 +199,10 @@ if SERVER then
 	net.Receive("m4n0cr4zy.Left_Click_2", function(_, ply)
 		local radius = net.ReadInt(13)
 		local pos = net.ReadVector()
+		local allow_weapons = net.ReadBool()
+		local allow_no_model = net.ReadBool()
 
-		local sendTab = ADVR_GetAllEnts(pos, radius)
+		local sendTab = ADVR_GetAllEnts(pos, radius, allow_weapons, allow_no_model)
 		local clickType = "LeftClick"
 
 		SendTable(sendTab, ply, clickType)
@@ -207,14 +211,23 @@ end
 
 
 -- Enviar tabela de entidades do servidor para o cliente (em partes) e abrir menu com todas as entidades dos dois lados
-function TOOL:RightClick(trace)				
-    if CLIENT then return end
+function TOOL:RightClick(trace)
+    if SERVER then
+        net.Start("m4n0cr4zy.Right_Click_1")
+        net.Send(self:GetOwner())
+    end	
+end
 
-	local sendTab = ADVR_GetAllEnts()
-	local ply = self:GetOwner()
-	local clickType = "RightClick"
+if SERVER then
+	net.Receive("m4n0cr4zy.Right_Click_2", function(_, ply)
+		local allow_weapons = net.ReadBool()
+		local allow_no_model = net.ReadBool()
 
-	SendTable(sendTab, ply, clickType)
+		local sendTab = ADVR_GetAllEnts(nil, nil, allow_weapons, allow_no_model)
+		local clickType = "RightClick"
+	
+		SendTable(sendTab, ply, clickType)
+	end)
 end
 
 

@@ -1,4 +1,4 @@
-function ADVR_GetAllEnts(pos, radius)
+function ADVR_GetAllEnts(pos, radius, allow_weapons, allow_no_model)
     local entsList = {}
 
     local foundEnts
@@ -12,8 +12,8 @@ function ADVR_GetAllEnts(pos, radius)
         if not ent:IsValid() then continue end
         if ent:EntIndex() == -1 then continue end
         if ADVRBlacklist[ent:GetClass()] then continue end
-        if not GetConVar("advr_allow_weapons"):GetBool() and ent:IsWeapon() then continue end
-        if not GetConVar("advr_allow_no_model"):GetBool() and (ent:GetModel() == "" or ent:GetModel() == nil) then continue end
+        if not allow_weapons and ent:IsWeapon() then continue end
+        if not allow_no_model and (ent:GetModel() == "" or ent:GetModel() == nil) then continue end
 
         local constraineds = {}
 
