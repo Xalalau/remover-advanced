@@ -419,13 +419,13 @@ local function SearchForModels(entsSearch, EntsListView, entsListCl, entsListSv)
     }
 
     for k, entInfo in ipairs(entsListCl) do
-        if string.find(entInfo.model, searchText) then
+        if string.find(entInfo.model, searchText, nil, true) then
             table.insert(found.cl, entInfo)
         end
     end
 
     for k, entInfo in ipairs(entsListSv) do
-        if string.find(entInfo.model, searchText) then
+        if string.find(entInfo.model, searchText, nil, true) then
             table.insert(found.sv, entInfo)
         end
     end

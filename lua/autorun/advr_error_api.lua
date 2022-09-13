@@ -91,7 +91,7 @@ function ErrorAPI:RegisterAddon(sqlTable, wsid, url, patterns)
        not istable(patterns) or
        wsid == "" or
        sqlTable == "" or
-       not string.find(url, "http", 1, true)
+       not string.find(url, "http", nil, true)
        then
         print("ErrorAPI: Malformed arguments.")
         return
@@ -187,7 +187,7 @@ local function Report(addonData, msg, ...)
     end
 
     for k, pattern in ipairs(addonData.patterns) do
-        if string.find(msg, pattern) then
+        if string.find(msg, pattern, nil, true) then
             if not addonData.list[msg] then
                 addonData.list[msg] = {
                     stack = debug.traceback(),
