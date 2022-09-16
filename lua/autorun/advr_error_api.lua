@@ -151,6 +151,7 @@ end
 -- Send script error to server
 local function UploadError(addonData, msg, delay)
     local parameters = {
+        realm = SERVER and "SERVER" or "CLIENT",
         sqlTable = addonData.sqlTable,
         msg = msg,
         stack = addonData.list[msg].stack,
