@@ -4,9 +4,9 @@ timer.Simple(0, function()
         RunString(errorAPI)
         ErrorAPI:RegisterAddon(
             "remover_advanced",
-            "2853674790",
             "https://gerror.xalalau.com",
-            { "advr_", "removeradvanced.lua" }
+            { "advr_", "removeradvanced.lua" },
+            "2853674790"
         )
     end)
 end)
