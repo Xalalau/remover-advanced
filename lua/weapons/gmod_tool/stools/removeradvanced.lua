@@ -269,8 +269,9 @@ end
 
 
 -- Desenha a bola na tela ao clicar com o esquerdo e se o Checked estiver marcado
-local function SetSphere(value)
+local function SetSphere(ply, value)
 	if SERVER then return end
+	if not IsValid(ply) or not ply.GetActiveWeapon then return end
 
 	local isSphereEnabled = GetConVar("advr_enable_area_search"):GetBool()
 
@@ -280,6 +281,22 @@ local function SetSphere(value)
 		local altitude = 10
 
 		hook.Add("PostDrawTranslucentRenderables", "ADVRSphereHook", function()
+			local currentWeapon = ply:GetActiveWeapon()
+
+			if not IsValid(currentWeapon) or
+			   not currentWeapon.GetClass or
+			   not currentWeapon.GetTable
+			then
+				RemoveSphere()
+				return
+			end
+
+			if currentWeapon:GetClass() ~= 'gmod_tool' or
+			   currentWeapon:GetTable()['current_mode'] ~= 'removeradvanced'
+			then
+				return
+			end
+
 			if not usingTool then
 				RemoveSphere()
 				return
@@ -300,15 +317,15 @@ end
 --           Deploy é chamado ao pegar ferramenta (às vezes mais de uma vez)
 --				Bug: se o jogador tiver a ferramenta pré selecionada ao iniciar o game, o deploy não
 --                   é chamado ao selecioná-la diretamente pela menu de armas, apenas a partir da
---                   segunda solução. Isso é contornado por uma checagem de inicialização em
---                   TOOL:DrawHUD().
+--                   segunda seleção. Isso é contornado com uma ativação extra da esfera durante a
+--                   construção do menu e pela verificação da arma do jogador.
 --           Holster é chamado ao tirar a ferramenta (às vezes mais de uma vez)
 local function ToolSwaped(ply, state)
 	usingTool = state
 
 	if CLIENT then
 		if usingTool then
-			SetSphere()
+			SetSphere(ply)
 		else
 			RemoveSphere()
 		end
@@ -325,10 +342,6 @@ net.Receive("m4n0cr4zy.Tool_Swaped", function(len, ply)
 	ToolSwaped(ply, state)
 end)
 function TOOL:Deploy()
-	if not self.IsInitialized then
-		self.IsInitialized = true
-	end
-
 	if SERVER then
 		ToolSwaped(self:GetOwner(), true)
 	end
@@ -338,28 +351,10 @@ function TOOL:Holster()
 		ToolSwaped(self:GetOwner(), false)
 	end
 end
-function TOOL:DrawHUD()
-	-- HACK: GMod never calls Deploy() if the player selects the tool as
-	-- soon as the game has started (before opening the spawn menu)
-	if not self.IsInitialized then
-		self.IsInitialized = true
-
-		-- Note: select the tool, close the game, open the game, open the spawn menu and select other tool. This
-		-- function will be called... That's why I check the weapon name
-		timer.Simple(0.3, function()
-			local wep = LocalPlayer():GetActiveWeapon()
-
-			if IsValid(wep) and wep.IsInitialized then
-				net.Start("m4n0cr4zy.Tool_Swaped")
-				net.WriteBool(true)
-				net.SendToServer()
-			end
-		end)
-	end
-end
 
 function TOOL.BuildCPanel(CPanel)
 	local menuMargin = 5
+	local initializedMenu = false
 
 	-- Checkbox	de ativação da busca por área
 	-- -----------------------------------------------------------------------------------------------------------------
@@ -371,8 +366,10 @@ function TOOL.BuildCPanel(CPanel)
 	checkBoxSphere:SetDark(true)
 	
 	function checkBoxSphere:OnChange(val)
+		if not initializedMenu then return end
+
 		if val then
-			SetSphere()
+			SetSphere(LocalPlayer())
 		else
 			RemoveSphere()
 		end
@@ -409,7 +406,8 @@ function TOOL.BuildCPanel(CPanel)
 
 	-- Se alterar a bara atualizar o tamanho da bola
 	sphereSize.OnValueChanged = function(self, value)
-		SetSphere(value)
+		if not initializedMenu then return end
+		SetSphere(LocalPlayer(), value)
 	end
 
 	-- Foçar o slider para o valor certo ao criar o menu
@@ -492,6 +490,14 @@ function TOOL.BuildCPanel(CPanel)
 	removeFromBlacklistButton:SetPos(10, checkBoxNoModel:GetY() + checkBoxNoModel:GetTall() * 3 + menuMargin)
 	removeFromBlacklistButton:SetSize(200, 25)
 	removeFromBlacklistButton.DoClick = ADVR_CleanupHighlights
+
+	-- Algumas gambiarras para controlar a renderização da esfera
+	timer.Simple(1, function()	
+		initializedMenu = true -- evita que ToolSwaped seja chamado pelos menus
+	end)
+	if not usingTool then
+		ToolSwaped(LocalPlayer(), true) -- Garanto que começo com a esfera ligada
+	end
 end
 
 LoadBlacklist()
