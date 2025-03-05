@@ -280,7 +280,9 @@ local function SetSphere(ply, value)
 		local longitude = 10
 		local altitude = 10
 
-		hook.Add("PostDrawTranslucentRenderables", "ADVRSphereHook", function()
+		hook.Add("PostDrawTranslucentRenderables", "ADVRSphereHook", function(isDrawingDepth, isDrawSkybox, isDraw3DSkybox)
+			if isDrawingDepth or isDrawSkybox or isDraw3DSkybox then return end
+
 			local currentWeapon = ply:GetActiveWeapon()
 
 			if not IsValid(currentWeapon) or
