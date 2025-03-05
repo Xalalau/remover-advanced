@@ -10,7 +10,7 @@ TOOL.Command    = nil
 TOOL.ConfigName = ""
 
 if CLIENT then
-    TOOL.Information = {
+	TOOL.Information = {
 		{ name = "left" },
 		{ name = "right" },
 		{ name = "reload" },
@@ -189,10 +189,19 @@ end
 
 -- Botão esquerdo: Busca localizada (esfera)
 function TOOL:LeftClick(trace)
-    if SERVER then
+	local owner = self:GetOwner()
+
+	if not owner:IsAdmin() then
+		owner:PrintMessage(HUD_PRINTTALK, "Admin only tool!")
+		return false
+	end
+
+	if SERVER then
         net.Start("m4n0cr4zy.Left_Click_1")
-        net.Send(self:GetOwner())
+        net.Send(owner)
     end	
+
+	return false
 end
 
 if SERVER then
@@ -212,10 +221,18 @@ end
 
 -- Enviar tabela de entidades do servidor para o cliente (em partes) e abrir menu com todas as entidades dos dois lados
 function TOOL:RightClick(trace)
-    if SERVER then
+	local owner = self:GetOwner()
+
+	if not owner:IsAdmin() then
+		owner:PrintMessage(HUD_PRINTTALK, "Admin only tool!")
+		return false
+	end
+	if SERVER then
         net.Start("m4n0cr4zy.Right_Click_1")
-        net.Send(self:GetOwner())
+        net.Send(owner)
     end	
+
+	return false
 end
 
 if SERVER then
@@ -234,6 +251,13 @@ end
 -- Remover entidade e constraints
 -- Diretamente do remover tool do GMod
 function TOOL:Reload(trace)
+	local owner = self:GetOwner()
+
+	if not owner:IsAdmin() then
+		owner:PrintMessage(HUD_PRINTTALK, "Admin only tool!")
+		return false
+	end
+
 	local ent = trace.Entity
 
 	if removalMode == 'single' then
@@ -323,6 +347,8 @@ end
 --                   construção do menu e pela verificação da arma do jogador.
 --           Holster é chamado ao tirar a ferramenta (às vezes mais de uma vez)
 local function ToolSwaped(ply, state)
+    if not ply:IsAdmin() then return end
+
 	usingTool = state
 
 	if CLIENT then
@@ -357,6 +383,15 @@ end
 function TOOL.BuildCPanel(CPanel)
 	local menuMargin = 5
 	local initializedMenu = false
+
+    if not LocalPlayer():IsAdmin() then
+		local adminWarning = vgui.Create("DLabel", CPanel)
+		adminWarning:SetPos(10, 25 + menuMargin)
+		adminWarning:SetWide(210)
+		adminWarning:SetText("Admin only tool!")
+		adminWarning:SetDark(true)
+		return
+	end
 
 	-- Checkbox	de ativação da busca por área
 	-- -----------------------------------------------------------------------------------------------------------------
